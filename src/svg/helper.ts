@@ -173,9 +173,9 @@ export function getSRTTransformString(
 }
 
 export const encodeBase64 = (function () {
-    if (env.hasGlobalWindow && isFunction(window.btoa)) {
+    if (typeof btoa === 'function' && typeof unescape === 'function' && typeof encodeURIComponent === 'function') {
         return function (str: string) {
-            return window.btoa(unescape(encodeURIComponent(str)));
+            return btoa(unescape(encodeURIComponent(str)));
         };
     }
     if (typeof Buffer !== 'undefined') {
