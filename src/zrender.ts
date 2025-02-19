@@ -25,6 +25,7 @@ import Displayable from './graphic/Displayable';
 import { lum } from './tool/color';
 import { DARK_MODE_THRESHOLD } from './config';
 import Group from './graphic/Group';
+import { DesignTokenManager, DesignTokens } from './tool/designToken';
 
 
 type PainterBaseCtor = {
@@ -88,6 +89,8 @@ class ZRender {
     private _darkMode = false;
 
     private _backgroundColor: string | GradientObject | PatternObject;
+
+    readonly tokenManager = new DesignTokenManager();
 
     constructor(id: number, dom?: HTMLElement, opts?: ZRenderInitOpt) {
         opts = opts || {};
@@ -483,11 +486,41 @@ class ZRender {
 
         delInstance(this.id);
     }
+
+    /**
+     * Register design tokens for theming
+     * @param tokens Design tokens object
+     */
+    registerDesignTokens(tokens: DesignTokens) {
+        if (this._disposed) {
+            return;
+        }
+        this.tokenManager.registerTokens(tokens);
+        // Mark all elements' styles as dirty
+        const roots = this.storage.getRoots();
+        for (let i = 0; i < roots.length; i++) {
+            roots[i].traverse(el => {
+                if (el instanceof Displayable) {
+                    el.dirtyStyle();
+                }
+            });
+        }
+        // Force redraw all elements since their styles might have changed
+        this.refresh();
+    }
+
+    /**
+     * Get the resolved value of a design token
+     * @param token Token reference (e.g. '@border')
+     */
+    getTokenValue(token: string) {
+        return this.tokenManager.getTokenValue(token);
+    }
 }
 
 
 export interface ZRenderInitOpt {
-    renderer?: string   // 'canvas' or 'svg
+    renderer?: string   // 'canvas' or 'svg'
     devicePixelRatio?: number
     width?: number | string // 10, 10px, 'auto'
     height?: number | string

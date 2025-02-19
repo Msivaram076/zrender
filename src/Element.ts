@@ -730,11 +730,14 @@ class Element<Props extends ElementProps = ElementProps> {
             this.attrKV(keyOrObj as keyof ElementProps, value as AllPropTypes<ElementProps>);
         }
         else if (isObject(keyOrObj)) {
-            let obj = keyOrObj as object;
-            let keysArr = keys(obj);
+            const obj = keyOrObj as Props;
+            if ((obj as any).style && this.__zr?.tokenManager) {
+                (obj as any).style = this.__zr.tokenManager.resolveStyle((obj as any).style);
+            }
+            const keysArr = keys(obj);
             for (let i = 0; i < keysArr.length; i++) {
-                let key = keysArr[i];
-                this.attrKV(key as keyof ElementProps, keyOrObj[key]);
+                const key = keysArr[i];
+                this.attrKV(key as keyof ElementProps, obj[key]);
             }
         }
         this.markRedraw();
@@ -1791,9 +1794,13 @@ function animateTo<T>(
     return animators;
 }
 
-function copyArrShallow(source: number[], target: number[], len: number) {
+function copyArrShallow(source: number[], target: ArrayLike<number>, len: number) {
+    // Ensure we're working with arrays
+    const sourceArr = Array.isArray(source) ? source : Array.prototype.slice.call(source);
+    const targetArr = Array.isArray(target) ? target : Array.prototype.slice.call(target);
+
     for (let i = 0; i < len; i++) {
-        source[i] = target[i];
+        sourceArr[i] = targetArr[i];
     }
 }
 
@@ -1810,7 +1817,9 @@ function copyValue(target: Dictionary<any>, source: Dictionary<any>, key: string
         if (isTypedArray(source[key])) {
             const len = source[key].length;
             if (target[key].length !== len) {
-                target[key] = new (source[key].constructor)(len);
+                // Use the constructor from source to create new typed array
+                const TypedArrayConstructor = source[key].constructor as any;
+                target[key] = new TypedArrayConstructor(len);
                 copyArrShallow(target[key], source[key], len);
             }
         }

@@ -599,7 +599,10 @@ function flushPathDrawn(ctx: CanvasRenderingContext2D, scope: BrushScope) {
 }
 
 function getStyle(el: Displayable, inHover?: boolean) {
-    return inHover ? (el.__hoverStyle || el.style) : el.style;
+    const style = inHover ? (el.__hoverStyle || el.style) : el.style;
+    return el.__zr?.tokenManager
+        ? el.__zr.tokenManager.getPaintStyle(style)
+        : style;
 }
 
 export function brushSingle(ctx: CanvasRenderingContext2D, el: Displayable) {

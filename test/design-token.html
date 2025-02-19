@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Design Token Test</title>
+    <script src="../dist/zrender.js"></script>
+    <style>
+        #main {
+            width: 600px;
+            height: 400px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+    <script>
+        // Initialize ZRender
+        const zr = zrender.init(document.getElementById('main'));
+
+        // Register design tokens
+        const tokens = {
+            color: {
+                'primary': 'blue',
+                'border': '#ccc',
+                'dataZoomBorder': '@border',
+                'highlight': '@primary'
+            }
+        };
+        zr.registerDesignTokens(tokens);
+
+        // Test basic token usage
+        const rect1 = new zrender.Rect({
+            shape: {
+                x: 50,
+                y: 50,
+                width: 100,
+                height: 100
+            },
+            style: {
+                fill: '@primary',
+                stroke: '@border',
+                lineWidth: 2
+            }
+        });
+
+        // Add debug logging for attr calls
+        const originalAttr = rect1.attr;
+        rect1.attr = function(...args) {
+            return originalAttr.apply(this, args);
+        };
+
+        // Test token reference
+        const rect2 = new zrender.Rect({
+            shape: {
+                x: 200,
+                y: 50,
+                width: 100,
+                height: 100
+            },
+            style: {
+                fill: '@highlight',
+                stroke: '@dataZoomBorder',
+                lineWidth: 2
+            }
+        });
+
+        // Test gradient with tokens
+        const rect3 = new zrender.Rect({
+            shape: {
+                x: 350,
+                y: 50,
+                width: 100,
+                height: 100
+            },
+            style: {
+                fill: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                        { offset: 0, color: '@primary' },
+                        { offset: 1, color: '@border' }
+                    ]
+                },
+                stroke: '@border',
+                lineWidth: 2
+            }
+        });
+
+        // Add shapes to ZRender
+        zr.add(rect1);
+        zr.add(rect2);
+        zr.add(rect3);
+
+        // Test dynamic token updates
+        setTimeout(() => {
+            const newTokens = {
+                color: {
+                    'primary': 'green',
+                    'border': '#666',
+                    'dataZoomBorder': '@border',
+                    'highlight': '@primary'
+                }
+            };
+            zr.registerDesignTokens(newTokens);
+        }, 2000);
+    </script>
+</body>
+</html>

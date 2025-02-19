@@ -166,14 +166,14 @@ function hasShapeAnimation(el: Displayable) {
     return false;
 }
 
-export function brushSVGPath(el: Path, scope: BrushScope) {
-    const style = el.style;
+export function brushSVGPath(el: Path, scope: BrushScope, style?: PathStyleProps) {
+    style = style || el.style;
     const shape = el.shape;
     const builtinShpDef = builtinShapesDef[el.type];
     const attrs: SVGVNodeAttrs = {};
     const needsAnimate = scope.animation;
     let svgElType = 'path';
-    const strokePercent = el.style.strokePercent;
+    const strokePercent = style.strokePercent;
     const precision = (scope.compress && getPathPrecision(el)) || 4;
     // Using SVG builtin shapes if possible
     if (builtinShpDef
@@ -232,8 +232,8 @@ export function brushSVGPath(el: Path, scope: BrushScope) {
     return createVNode(svgElType, el.id + '', attrs);
 }
 
-export function brushSVGImage(el: ZRImage, scope: BrushScope) {
-    const style = el.style;
+export function brushSVGImage(el: ZRImage, scope: BrushScope, style?: ImageStyleProps) {
+    style = style || el.style;
     let image = style.image;
 
     if (image && !isString(image)) {
@@ -277,9 +277,8 @@ export function brushSVGImage(el: ZRImage, scope: BrushScope) {
     return createVNode('image', el.id + '', attrs);
 };
 
-export function brushSVGTSpan(el: TSpan, scope: BrushScope) {
-    const style = el.style;
-
+export function brushSVGTSpan(el: TSpan, scope: BrushScope, style?: TSpanStyleProps) {
+    style = style || el.style;
     let text = style.text;
     // Convert to string
     text != null && (text += '');
@@ -350,14 +349,18 @@ export function brushSVGTSpan(el: TSpan, scope: BrushScope) {
 }
 
 export function brush(el: Displayable, scope: BrushScope): SVGVNode {
+    const style = el.__zr?.tokenManager
+        ? el.__zr.tokenManager.getPaintStyle(el.style)
+        : undefined;  // Let individual brush functions use el.style
+
     if (el instanceof Path) {
-        return brushSVGPath(el, scope);
+        return brushSVGPath(el, scope, style);
     }
     else if (el instanceof ZRImage) {
-        return brushSVGImage(el, scope);
+        return brushSVGImage(el, scope, style);
     }
     else if (el instanceof TSpan) {
-        return brushSVGTSpan(el, scope);
+        return brushSVGTSpan(el, scope, style);
     }
 }
 
