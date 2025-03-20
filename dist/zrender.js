@@ -1258,8 +1258,9 @@
     }
     function preparePointerTransformer(markers, saved, inverse) {
         var transformerName = inverse ? 'invTrans' : 'trans';
+        var srcCoordsName = inverse ? 'invSrcCoords' : 'srcCoords';
         var transformer = saved[transformerName];
-        var oldSrcCoords = saved.srcCoords;
+        var oldSrcCoords = saved[srcCoordsName];
         var srcCoords = [];
         var destCoords = [];
         var oldCoordTheSame = true;
@@ -1274,7 +1275,7 @@
         }
         return (oldCoordTheSame && transformer)
             ? transformer
-            : (saved.srcCoords = srcCoords,
+            : (saved[srcCoordsName] = srcCoords,
                 saved[transformerName] = inverse
                     ? buildTransformer(destCoords, srcCoords)
                     : buildTransformer(srcCoords, destCoords));

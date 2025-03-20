@@ -11,6 +11,7 @@ type SavedInfo = {
     trans?: ReturnType<typeof buildTransformer>
     invTrans?: ReturnType<typeof buildTransformer>
     srcCoords?: number[]
+    invSrcCoords?: number[]
 }
 
 /**
@@ -139,8 +140,9 @@ function prepareCoordMarkers(el: HTMLElement, saved: SavedInfo) {
 
 function preparePointerTransformer(markers: HTMLDivElement[], saved: SavedInfo, inverse?: boolean) {
     const transformerName: 'invTrans' | 'trans' = inverse ? 'invTrans' : 'trans';
+    const srcCoordsName: 'invSrcCoords' | 'srcCoords' = inverse ? 'invSrcCoords' : 'srcCoords';
     const transformer = saved[transformerName];
-    const oldSrcCoords = saved.srcCoords;
+    const oldSrcCoords = saved[srcCoordsName];
     const srcCoords = [];
     const destCoords = [];
     let oldCoordTheSame = true;
@@ -158,7 +160,7 @@ function preparePointerTransformer(markers: HTMLDivElement[], saved: SavedInfo, 
     return (oldCoordTheSame && transformer)
         ? transformer
         : (
-            saved.srcCoords = srcCoords,
+            saved[srcCoordsName] = srcCoords,
             saved[transformerName] = inverse
                 ? buildTransformer(destCoords, srcCoords)
                 : buildTransformer(srcCoords, destCoords)

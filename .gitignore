@@ -161,8 +161,7 @@ pip-log.txt
 # Mac crap
 .DS_Store
 
-
-/lib
+.idea
 /esm
 node_modules
 
